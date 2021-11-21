@@ -24,7 +24,7 @@ pub fn send_all(stdout: &mut StandardStream, message: String, context: bool) -> 
             Some(Color::Blue) // bold blue
         )
     )?;
-    writeln!(stdout, "Broadcast {}",env!("CARGO_PKG_VERSION"));
+    writeln!(stdout, "Broadcast v{}",env!("CARGO_PKG_VERSION"));
     stdout.set_color(
         ColorSpec::new().set_bold(false).set_fg(
             Some(Color::Blue) // just blue
