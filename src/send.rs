@@ -4,12 +4,19 @@ use termcolor::{Color, ColorSpec, Buffer, StandardStream, WriteColor};
 
 use crate::write;
 use crate::animation;
+use crate::target;
 
 pub fn send_all(stdout: &mut StandardStream, message: String, context: bool) -> std::io::Result<()> {
-    let tty_names = vec!("ttys002", "ttys003");
+    let tty_names = target::get_all()?;
     let mut tty: Vec<File> = Vec::new();
     for t in tty_names {
-        let file = OpenOptions::new().write(true).open(format!("/dev/{}",t))?;
+        let file = OpenOptions::new().write(true).open(format!("/dev/{}",t));
+        if let Err(_) = file {
+            // println!("debug: failed opening write stream for a tty");
+            // probably nothing to worry about...
+            continue;
+        }
+        let file = file.unwrap();
         tty.push(file);
     }
     stdout.set_color(
@@ -46,7 +53,7 @@ pub fn send(message: &String, context: &bool, tty: &mut Vec<File>) -> std::io::R
     )?;
 
     if !context {
-        writeln!(&mut recv_out, "\n\n📡  {}\n", message);
+        writeln!(&mut recv_out, "\n\n> {}\n", message);
     } else {
         recv_out.set_color(
             ColorSpec::new().set_fg(None).set_bold(true)
@@ -59,12 +66,12 @@ pub fn send(message: &String, context: &bool, tty: &mut Vec<File>) -> std::io::R
         recv_out.set_color(
             ColorSpec::new().set_fg(Some(Color::Blue)).set_bold(true)
         )?;
-        writeln!(&mut recv_out, "📡  {}\n", message);
+        writeln!(&mut recv_out, "> {}\n", message);
     }
 
     recv_out.reset().expect("Failed to reset!");
     for t in tty {
-        write::write_recv_out(&mut recv_out, t)?;
+        write::write_recv_out(&mut recv_out, t);
     }
 
     Ok(())

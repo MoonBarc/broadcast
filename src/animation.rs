@@ -18,13 +18,13 @@ pub fn inc_transmission(recv_out: &mut Buffer, tty: &mut Vec<File>) -> std::io::
         write!(recv_out, "({}) ", 5 - c / 4)?;
         recv_out.flush()?;
         for t in &mut *tty {
-            write::write_recv_out(recv_out, t)?;
+            write::write_recv_out(recv_out, t);
         }
         std::thread::sleep(std::time::Duration::from_millis(250));
     };
     write!(recv_out, "\rPrinting transmission...           ")?;
     for t in tty {
-        write::write_recv_out(recv_out, t)?;
+        write::write_recv_out(recv_out, t);
     }
     recv_out.reset()?;
     Ok(())
