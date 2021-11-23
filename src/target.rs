@@ -3,9 +3,17 @@
 use std::fs;
 use std::os::unix::io::AsRawFd;
 
+/// length, prefix
+struct Target(i32, String);
+
 pub fn get_ptys() -> std::io::Result<Vec<String>> {
     let mut ptys: Vec<String> = Vec::new();
-    let paths = fs::read_dir("/dev/pts")?;
+    let paths = fs::read_dir("/dev/pts");
+    if let Err(_) = paths {
+        // some oses *cough* darwin *cough* dont have /dev/pts
+        return Ok(Vec::new());
+    }
+    let paths = paths.unwrap();
     for p in paths {
         let pn = format!("{}",p.unwrap().path().display());
         if pn.contains("ptmx") {
@@ -22,10 +30,20 @@ pub fn get_ttys() -> std::io::Result<Vec<String>> {
     let mut tty: Vec<String> = Vec::new();
     let paths = fs::read_dir("/dev")?;
     for p in paths {
+        let prefixes = vec![
+            Target(3, String::from("tty")),
+            Target(3, String::from("ttys"))
+        ];
         let pn = format!("{}", p.unwrap().path().display());
-        // if it's a tty but not "the tty"
-        if pn.contains("tty") && pn != String::from("/dev/tty") {
-            tty.push(pn.replace("/dev/",""));
+        for x in prefixes {
+            let juice = pn.replace(
+                format!("/dev/{}", x.1).as_str(),
+                "");
+            // ttys000 causes hang. idk why
+            if juice.len() == 3 && pn != "/dev/ttys000" {
+                tty.push(pn.replace("/dev/",""));
+                break;
+            }
         }
     }
     Ok(tty)
