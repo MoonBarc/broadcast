@@ -24,7 +24,7 @@ fn main() -> std::io::Result<()> {
     opts.optflag("v", "version",    "Displays the current version and exits");
     opts.optflag("c", "no-context", "Removes context from the broadcast message");
     opts.optopt( "g", "group",      "Sends a message to a specific group", "NAME");
-    opts.optflag("d", "",           "Debug something and exit!");
+    opts.optflag("d", "",           "Displays detected targets and and exits");
     let matches = opts.parse(&args[1..]);
 
     if let Err(getopts::Fail::UnrecognizedOption(a)) = matches {
