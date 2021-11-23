@@ -31,10 +31,20 @@ pub fn send_all(stdout: &mut StandardStream, message: String, context: bool) -> 
         )
     )?;
     writeln!(stdout, "Drawing attention...");
+    newline(&mut tty)?;
     warn(&mut tty)?;
     writeln!(stdout, "Broadcasting...");
     send(&message, &context, &mut tty)?;
     writeln!(stdout, "Done!");
+    Ok(())
+}
+
+pub fn newline(tty: &mut Vec<File>) -> std::io::Result<()> {
+    let mut recv_out = Buffer::ansi();
+    write!(recv_out, "\n")?;
+    for t in tty {
+        write::write_recv_out(&mut recv_out, t);
+    }
     Ok(())
 }
 
